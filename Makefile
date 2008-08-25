@@ -19,6 +19,7 @@ protocol.o: protocol.h protocol.c
 	$(CC) -c $(FLAGS) protocol.c
 
 clean:
-	rm -f *.o
-	rm -rf python/build
-	find . -name '*.py[co]' | xargs rm -f
+	-rm -f *.o
+	-rm -rf python/build
+	-find . -name '*.py[co]' | xargs rm -f
+	-rm -f cogent
