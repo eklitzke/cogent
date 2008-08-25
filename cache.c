@@ -36,6 +36,7 @@ cache_init(gsize size)
 	return cache;
 }
 
+#if 0
 int main (int argc, int argv)
 {
 	cogent_cache *cache = cache_init(1e5);
@@ -51,3 +52,4 @@ int main (int argc, int argv)
 	printf("got %s\n", item->data);
 	return 0;
 }
+#endif
