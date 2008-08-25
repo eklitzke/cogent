@@ -17,6 +17,9 @@
 #define CMD_SERVER_QUERY ((uint8_t) 'q')
 #define CMD_SERVER_PING  ((uint8_t) 'p')
 
+/* Get the value of the command byte from the struct */
+#define CMD_BYTE(x)      ((uint8_t) *x)
+
 
 void* parse_buffer(void *buf, size_t len, uint8_t *cmd);
 
