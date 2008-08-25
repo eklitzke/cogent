@@ -1,0 +1,104 @@
+Cogent uses a binary protocol. The format is extremely similar to the proposed
+memcached binary protocol. The format is:
+
+magic bytes "CGNT" -- four bytes
+version byte       -- one byte (only lower half used -- upper half reserved)
+command byte       -- one byte
+padding            -- two bytes, reserved
+opaque id          -- four bytes
+[ cmd-specific fixed width fields ]
+[ cmd-specific variable width fields ]
+
+This protocol is subject to change, although I would imagine that that would
+happen before anyone else is interested enough in this project to write a
+library for a new language.
+
+By convention, if the request contains a key, the key-length will be the first
+fixed width field, and the key itself will be the first variable width field.
+Also by convention, protocol bytes sent by the client are upper case ASCII
+characters, and protocol bytes sent by the server are the lower case
+equivalents.
+
+All integer fields are stored in network order.
+
+The initial implementation goal is to implement the goal on UDP. The reason
+that UDP was chosen was because (a) it's easy to do and (b) it makes it trivial
+to scale to a large number of connections like memcached without me learning
+about libevent. There are obviously limitations with this, the main one being
+that the requests, and responses are limited to 64k. This should be fixed later
+(there isn't anything to stop TCP data).
+
+The intention is that clients should time-out on the UDP request, in case the
+message is lost. If there is a time out, the client should pretend like there
+was a cache miss. There are no built-in facilities for clients to determine the
+optimal time-out value, but it is suggested that clients that wish to set this
+dynamically can set and repeatedly get a small value and use this to adjust the
+time-out value.
+
+CLIENT REQUESTS
+=======================
+
+Format of GET requests
+----------------------
+protocol byte = 'G'
+key length         -- four bytes (might change: is this needed?)
+key value          -- variable
+
+Format of SET requests
+----------------------
+protocol byte = 'S'
+key length         -- four bytes
+value length       -- four bytes
+key value          -- variable
+value              -- variable
+
+Format of DEL requests
+---------------------
+protocol byte = 'D'
+key length         -- four bytes (might change: is this needed?)
+key value          -- variable
+
+Format of QUERY requests
+---------------------
+protocol byte = 'Q'
+flags              -- one byte
+key length         -- four bytes (might change: is this needed?)
+key value          -- variable
+
+Only flag right now is FLAG_PROMOTE = 0x01
+
+Format of PING requests
+---------------------
+protocol byte = 'P'
+(no additional fields)
+
+SERVER RESPONSES
+=======================
+
+Format of GET responses
+----------------------
+protocol byte = 'g'
+flags              -- one byte
+value length       -- four bytes (might change: is this needed?)
+value              -- variable
+
+Right now there is only a flag: FLAG_FOUND = 0x01
+
+Format of SET responses
+----------------------
+(no response)
+
+Format of DEL responses
+---------------------
+(no response)
+
+Format of QUERY responses
+---------------------
+protocol byte = 'q'
+flags              -- one byte
+
+Only flag right now is FLAG_FOUND = 0x01
+
+Format of PING responses
+---------------------
+protocol byte = 'p'
