@@ -6,18 +6,6 @@
 
 #include "protocol.h"
 
-#define CMD_CLIENT_GET   ((uint8_t) 'G')
-#define CMD_CLIENT_SET   ((uint8_t) 'S')
-#define CMD_CLIENT_DEL   ((uint8_t) 'D')
-#define CMD_CLIENT_QUERY ((uint8_t) 'Q')
-#define CMD_CLIENT_PING  ((uint8_t) 'P')
-
-#define CMD_SERVER_GET   ((uint8_t) 'g')
-#define CMD_SERVER_SET   ((uint8_t) 's')
-#define CMD_SERVER_DEL   ((uint8_t) 'd')
-#define CMD_SERVER_QUERY ((uint8_t) 'q')
-#define CMD_SERVER_PING  ((uint8_t) 'p')
-
 /* Need to terminate this macro with a semicolon */
 #define PROTO_HEAD \
 	uint8_t version; \
