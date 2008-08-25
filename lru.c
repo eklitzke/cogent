@@ -2,8 +2,8 @@
 
 #include "lru.h"
 
-static void
-lru__promote_link(lru_cache *cache, GList *link_)
+void
+lru_promote_link(lru_cache *cache, GList *link_)
 {
 	g_queue_unlink(cache->queue, link_);
 	g_queue_push_head_link(cache->queue, link_);

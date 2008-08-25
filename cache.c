@@ -1,8 +1,9 @@
 #include <glib.h>
+#include <stdio.h>
 #include "cache.h"
 
 void
-cache_add_data(cogent_cache *cache, gpointer key, gpointer data, gsize size)
+cache_store(cogent_cache *cache, gpointer key, gpointer data, gsize size)
 {
 	lru_add_data(cache->cache, data, size);
 
@@ -11,6 +12,19 @@ cache_add_data(cogent_cache *cache, gpointer key, gpointer data, gsize size)
 
 	/* not correct! */
 	g_hash_table_replace(cache->tbl, key, head_link);
+}
+
+/* Fetch an item from the cache */
+cache_item *
+cache_fetch(cogent_cache *cache, gconstpointer key)
+{
+	GList *link = g_hash_table_lookup(cache->tbl, key);
+	if (link != NULL)
+	{
+		lru_promote_link(cache->cache, link);
+		return link->data;
+	}
+	return NULL;
 }
 
 cogent_cache *
@@ -31,6 +45,9 @@ int main (int argc, int argv)
 	gsize size_one = 3;
 
 	gpointer key = "key";
-	cache_add_data(cache, "key", data_one, size_one);
+	cache_store(cache, "key", data_one, size_one);
+
+	cache_item *item = cache_fetch(cache, "key");
+	printf("got %s\n", item->data);
 	return 0;
 }
