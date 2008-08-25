@@ -25,6 +25,8 @@ typedef struct {
 	const void *value;
 } proto_client_get;
 
+static void * parse_client_get(void *buf, proto_base *pb);
+
 void *
 parse_buffer(void *buf, size_t len, uint8_t *cmd)
 {
@@ -45,8 +47,9 @@ parse_buffer(void *buf, size_t len, uint8_t *cmd)
 	/* What kind of command is it? */
 	switch (base.cmd_byte) {
 		case CMD_CLIENT_GET:
-			return parse_client_get(rest, base);
+			return parse_client_get(rest, &base);
 			break;
+#if 0
 		case CMD_CLIENT_SET:
 			return parse_client_set(rest);
 			break;
@@ -74,17 +77,18 @@ parse_buffer(void *buf, size_t len, uint8_t *cmd)
 		case CMD_SERVER_PING:
 			return parse_server_ping(rest);
 			break;
+#endif
 		default:
 			return NULL;
 	}
 }
 
-void *
+static void *
 parse_client_get(void *buf, proto_base *pb)
 {
-	s = malloc(sizeof(proto_client_get));
-	memcpy(&s, pb, sizeof(proto_base));
-	s.key_len = (uint8_t) (*pb);
-	memcpy(&s, pb + 1, s.key_len);
+	proto_client_get *s = malloc(sizeof(proto_client_get));
+	memcpy(s, pb, sizeof(proto_base));
+	s->key_len = *((uint8_t *) pb);
+	memcpy(s, pb + 1, s->key_len);
 	return s;
 }
