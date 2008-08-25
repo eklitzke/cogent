@@ -23,6 +23,15 @@ class CogentTest(unittest.TestCase):
 		hit, cache_val = cache.get_str(key)
 		assert hit
 		assert cache_val == val
+	
+	def test_size(self):
+		cache = cogent.Cache(4096)
+		assert cache.size() == 0
+		assert cache.max_size() == 4096
+
+		cache.store_str('foo', 'val')
+		assert cache.size() > 0
+		assert cache.max_size() == 4096
 
 if __name__ == '__main__':
 	unittest.main()

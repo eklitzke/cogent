@@ -103,12 +103,27 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	return PyTuple_Pack(2, Py_True, item->data);
 }
 
+static PyObject*
+cogent_size(CogentObject *self)
+{
+	return PyInt_FromLong((long) self->cache->cache->size);
+}
+
+static PyObject*
+cogent_max_size(CogentObject *self)
+{
+	return PyInt_FromLong((long) self->cache->cache->max_size);
+}
+
 static PyMethodDef cogent_methods[] = {
 	{ "store", (PyCFunction) cogent_store, METH_KEYWORDS, "store" },
 	{ "get", (PyCFunction) cogent_get, METH_KEYWORDS, "get" },
 
 	{ "store_str", (PyCFunction) cogent_store_str, METH_KEYWORDS, "store_str" },
 	{ "get_str", (PyCFunction) cogent_get_str, METH_KEYWORDS, "get_str" },
+
+	{ "size", (PyCFunction) cogent_size, METH_NOARGS, "size" },
+	{ "max_size", (PyCFunction) cogent_max_size, METH_NOARGS, "max_size" },
 	{ NULL }
 };
 
