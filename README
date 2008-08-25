@@ -1,1 +1,4 @@
-simple cache using glib
+Simple cache using GLib.
+
+This software is licensed under a BSD license, but it links against software
+that uses other licenses (namely, GLib and Python).
