@@ -13,7 +13,7 @@ cogent_extension = Extension(
 	libraries=['glib-2.0'],
 	include_dirs=["/usr/include/glib-2.0", "/usr/lib/glib-2.0/include", ".."],
 	define_macros=macros,
-	extra_objects=["../cache.o"]
+	extra_objects=['../cache.o', '../lru.o']
 )
 
 setup(
