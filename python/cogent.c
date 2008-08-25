@@ -24,6 +24,23 @@ cogent_init(CogentObject *self, PyObject *args)
 }
 
 static PyObject*
+cogent_store_str(CogentObject *self, PyObject *args, PyObject *kwds)
+{
+	const char *key;
+	const char *val;
+	int len;
+
+	static char *kwlist[] = {"key", "val", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss#", kwlist, &key, &val, &len))
+		return NULL;
+
+	cache_store(self->cache, (gpointer) key, (gpointer) val, (gsize) len);
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject*
 cogent_store(CogentObject *self, PyObject *args, PyObject *kwds)
 {
 	const char *key;
@@ -40,6 +57,29 @@ cogent_store(CogentObject *self, PyObject *args, PyObject *kwds)
 
 	Py_INCREF(Py_None);
 	return Py_None;
+}
+
+static PyObject*
+cogent_get_str(CogentObject *self, PyObject *args, PyObject *kwds)
+{
+	const char *key;
+	static char *kwlist[] = {"key", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &key))
+		return NULL;
+
+	cache_item *item = cache_fetch(self->cache, (gconstpointer) key);
+	if (item == NULL)
+	{
+		Py_INCREF(Py_False);
+		Py_INCREF(Py_None);
+		return PyTuple_Pack(2, Py_False, Py_None);
+	}
+
+	Py_INCREF(Py_True);
+
+	/* not quite right */
+	return PyTuple_Pack(2, Py_True, PyString_FromStringAndSize(item->data, (Py_ssize_t) item->size));
 }
 
 static PyObject*
@@ -66,6 +106,9 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 static PyMethodDef cogent_methods[] = {
 	{ "store", (PyCFunction) cogent_store, METH_KEYWORDS, "store" },
 	{ "get", (PyCFunction) cogent_get, METH_KEYWORDS, "get" },
+
+	{ "store_str", (PyCFunction) cogent_store_str, METH_KEYWORDS, "store_str" },
+	{ "get_str", (PyCFunction) cogent_get_str, METH_KEYWORDS, "get_str" },
 	{ NULL }
 };
 
