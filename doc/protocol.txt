@@ -1,5 +1,6 @@
-Cogent uses a binary protocol. The format is extremely similar to the proposed
-memcached binary protocol. The format is:
+Cogent uses a binary protocol. The binary protocol can be implemented on top of
+any transport layer protocol (e.g. UDP, TCP). The format is extremely similar
+to the proposed memcached binary protocol. The format is:
 
 magic bytes "CGNT" -- four bytes
 version byte       -- one byte (only lower half used -- upper half reserved)
@@ -13,13 +14,21 @@ This protocol is subject to change, although I would imagine that that would
 happen before anyone else is interested enough in this project to write a
 library for a new language.
 
-By convention, if the request contains a key, the key-length will be the first
+By convention, if the request contains a key, the key length will be the first
 fixed width field, and the key itself will be the first variable width field.
 Also by convention, protocol bytes sent by the client are upper case ASCII
 characters, and protocol bytes sent by the server are the lower case
 equivalents.
 
+The opaque id is a four byte identifier that has no meaning to the server -- it
+is simply copied back in the server's response. This might be useful, for
+instance, for multi-threaded or asynchronous clients (i.e. to determine which
+request a response is to).
+
 All integer fields are stored in network order.
+
+Reserved fields should be zeroed out by clients (in case the fields acquire
+meaning in the future).
 
 The initial implementation goal is to implement the goal on UDP. The reason
 that UDP was chosen was because (a) it's easy to do and (b) it makes it trivial
