@@ -16,6 +16,7 @@ typedef struct
 
 lru_cache* lru_init(gsize max_size);
 void lru_free(lru_cache *cache);
-void lru_add_item(lru_cache *cache, gpointer data, gsize size);
+void lru_add_item(lru_cache *cache, cache_item *item);
+void lru_add_data(lru_cache *cache, gpointer data, gsize size);
 
 #endif /* _LRU_H_ */

@@ -43,9 +43,9 @@ lru_free(lru_cache *cache)
 }
 
 void
-lru_add_item(lru_cache *cache, gpointer data, gsize size)
+lru_add_item(lru_cache *cache, cache_item *item)
 {
-	gsize size_increment = sizeof(GList) + sizeof(cache_item) + size;
+	gsize size_increment = sizeof(GList) + sizeof(cache_item) + item->size;
 	g_assert(size_increment < (cache->max_size / 5));
 	cache->size += size_increment;
 
@@ -56,11 +56,16 @@ lru_add_item(lru_cache *cache, gpointer data, gsize size)
 		lru__remove_link(cache, link_);
 	}
 
-	cache_item *item = g_slice_new(cache_item);
-	item->data = data;
-	item->size = size;
-
 	g_queue_push_head(cache->queue, item);
+}
+
+void
+lru_add_data(lru_cache *cache, gpointer data, gsize size)
+{
+	cache_item *item = g_slice_new(cache_item);
+	item->data = g_slice_copy(size, data);
+	item->size = size;
+	lru_add_item(cache, item);
 }
 
 #if 0
