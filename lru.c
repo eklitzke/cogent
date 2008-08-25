@@ -1,18 +1,6 @@
-#include <stdio.h>
 #include <glib.h>
 
-typedef struct
-{
-	GQueue *queue;
-	gsize size;
-	gsize max_size;
-} lru_cache;
-
-typedef struct
-{
-	gpointer data;
-	gsize size;
-} cache_item;
+#include "lru.h"
 
 static void
 lru__promote_link(lru_cache *cache, GList *link_)
@@ -32,7 +20,7 @@ lru__remove_link(lru_cache *cache, GList *link_)
 	g_list_free_1(link_);
 }
 
-static lru_cache *
+lru_cache *
 lru_init(gsize max_size)
 {
 	lru_cache *cache = g_slice_new(lru_cache);
@@ -43,7 +31,7 @@ lru_init(gsize max_size)
 	return cache;
 }
 
-static void
+void
 lru_free(lru_cache *cache)
 {
 	/* TODO: this is a slow hack */
@@ -54,7 +42,7 @@ lru_free(lru_cache *cache)
 	}
 }
 
-static void
+void
 lru_add_item(lru_cache *cache, gpointer data, gsize size)
 {
 	gsize size_increment = sizeof(GList) + sizeof(cache_item) + size;
@@ -73,9 +61,9 @@ lru_add_item(lru_cache *cache, gpointer data, gsize size)
 	item->size = size;
 
 	g_queue_push_head(cache->queue, item);
-	printf("queue has %d items\n", (int) g_queue_get_length(cache->queue));
 }
 
+#if 0
 int main()
 {
 	lru_cache *cache = lru_init(1e5);
@@ -88,3 +76,4 @@ int main()
 	g_assert_not_reached();
 	return 0;
 }
+#endif
