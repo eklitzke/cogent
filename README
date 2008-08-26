@@ -1,4 +1,14 @@
-Simple cache using GLib.
+Simple memory caching service using GLib.
+
+The long term goal of this is to leverage Tim Janik's awesome slice allocator
+in a cache system. This is allocator is neat because it's designed to be fast,
+scalable, and multithreading friendly. This means that it should be easier to
+make a highly-concurrent memcached-like service that leverages the power,
+simplicity, and speed of GLib.
+
+I'm still prototyping everything (as evidenced by the fact that the protocol
+version is 0!) and evaluating if this is even feasible, i.e. how fast this will
+be compared to memcached.
 
 This software is licensed under a BSD license, but it links against software
 that uses other licenses (namely, GLib and Python).
