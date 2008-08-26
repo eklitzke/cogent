@@ -36,7 +36,7 @@ construct_get(char *key, uint8_t key_len, size_t *buf_len)
 	get[5] = CMD_CLIENT_GET; /* cmd */
 	get[6] = 0;              /* padding */
 	get[7] = 0;              /* padding */
-	memcpy(get + 8, 0, 4);   /* opaque id */
+	memset(get + 8, 0, 4);   /* opaque id */
 	get[12] = key_len;
 	memcpy(get + 13, key, key_len);
 
