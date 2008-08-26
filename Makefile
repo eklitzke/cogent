@@ -21,5 +21,6 @@ protocol.o: protocol.h protocol.c
 clean:
 	-rm -f *.o
 	-rm -rf python/build
+	-rm -rf client/build
 	-find . -name '*.py[co]' | xargs rm -f
 	-rm -f cogent
