@@ -123,7 +123,7 @@ parse_client_get(void *buf, proto_base *pb)
 {
 	proto_client_get *s = malloc(sizeof(proto_client_get));
 	memcpy(s, pb, sizeof(proto_base));
-	s->key_len = *((uint8_t *) pb);
-	memcpy(&s->value, pb + 1, s->key_len);
+	s->key_len = *((uint8_t *) buf);
+	memcpy(&s->value, buf + 1, s->key_len);
 	return s;
 }

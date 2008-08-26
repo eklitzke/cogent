@@ -41,6 +41,7 @@ int main(int argc, char **argv)
 			default:
 				printf("unknown\n");
 		}
+		free(s);
 	}
 
 	exit(EXIT_SUCCESS);
