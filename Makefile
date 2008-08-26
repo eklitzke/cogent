@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean tags
 
 CC = gcc
 
@@ -17,6 +17,9 @@ cache.o: cache.h cache.c lru.o
 
 protocol.o: protocol.h protocol.c
 	$(CC) -c $(FLAGS) protocol.c
+
+tags:
+	find . -name '*.[ch]' | ctags -L -
 
 clean:
 	-rm -f *.o
