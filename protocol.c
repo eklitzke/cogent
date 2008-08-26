@@ -28,9 +28,9 @@ typedef struct {
 static void * parse_client_get(void *buf, proto_base *pb);
 
 static uint8_t *
-construct_base(void)
+construct_base(size_t sz)
 {
-	uint8_t *get = malloc(1 << 16); /* FIXME */
+	uint8_t *get = malloc(sz);
 	memcpy(get, MAGIC, 4);
 	get[4] = 0;              /* version */
 	get[5] = CMD_CLIENT_GET; /* cmd */
@@ -43,25 +43,23 @@ construct_base(void)
 void *
 construct_client_get(char *key, uint8_t key_len, size_t *buf_len)
 {
-	uint8_t *get = construct_base();
+	*buf_len = 13 + key_len;
+	uint8_t *get = construct_base(*buf_len);
 	get[12] = key_len;
 	memcpy(get + 13, key, key_len);
-	*buf_len = 13 + key_len;
-	realloc(get, *buf_len);
 	return (void *) get;
 }
 
 void *
 construct_client_set(char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len)
 {
-	uint8_t *set = construct_base();
+	*buf_len = 15 + key_len + val_len;
+	uint8_t *set = construct_base(*buf_len);
 	set[12] = key_len;
 	memcpy(set + 13, &val_len, 2);
 	memcpy(set + 15, key, key_len);
 	memcpy(set + 15 + key_len, val, val_len);
-	*buf_len = 15 + key_len + val_len;
-	realloc(get, *buf_len);
-	return (void *) get;
+	return (void *) set;
 }
 
 void *
