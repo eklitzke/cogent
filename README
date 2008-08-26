@@ -10,5 +10,5 @@ I'm still prototyping everything (as evidenced by the fact that the protocol
 version is 0!) and evaluating if this is even feasible, i.e. how fast this will
 be compared to memcached.
 
-This software is licensed under a BSD license, but it links against software
-that uses other licenses (namely, GLib and Python).
+This software is licensed under the GPLv3, but it links against software that
+uses other licenses (namely, GLib and Python).
