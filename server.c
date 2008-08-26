@@ -29,8 +29,8 @@ int main(int argc, char **argv)
 	}
 
 	/* Find out the port we bind()ed to */
-	int sz = sizeof(servaddr);
-	if (getsockname(sock, (struct sockaddr *) &servaddr, &sz) < 0) {
+	int dummy = sizeof(servaddr);
+	if (getsockname(sock, (struct sockaddr *) &servaddr, &dummy) < 0) {
 		perror("getsockname()");
 		exit(EXIT_FAILURE);
 	}
@@ -39,7 +39,15 @@ int main(int argc, char **argv)
 	void *recv_buf = malloc(1 << 16);
 
 	while (1) {
-		recv(sock, recv_buf, 1 << 16, 0);
+		size_t sz = recv(sock, recv_buf, 1 << 16, 0);
+		void *s = parse_buffer(recv_buf, sz);
+		switch (CMD_BYTE(s)) {
+			case CMD_CLIENT_GET:
+				printf("got a GET\n");
+				break;
+			default:
+				printf("unknown\n");
+		}
 	}
 
 	exit(EXIT_SUCCESS);

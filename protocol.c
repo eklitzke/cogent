@@ -28,7 +28,7 @@ typedef struct {
 static void * parse_client_get(void *buf, proto_base *pb);
 
 void *
-parse_buffer(void *buf, size_t len, uint8_t *cmd)
+parse_buffer(void *buf, size_t len)
 {
 	if ((len < 24) || (memcmp(buf, MAGIC, 4)))
 		return NULL;
