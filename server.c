@@ -21,26 +21,19 @@ int main(int argc, char **argv)
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	//servaddr.sin_port = htons(COGENT_PORT);
-	servaddr.sin_port = htons(0);
+	servaddr.sin_port = htons(COGENT_PORT);
 	if (bind(sock, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0) {
 		perror("bind()");
 		exit(EXIT_FAILURE);
 	}
 
-	/* Find out the port we bind()ed to */
-	int dummy = sizeof(servaddr);
-	if (getsockname(sock, (struct sockaddr *) &servaddr, &dummy) < 0) {
-		perror("getsockname()");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("Bound to UDP port %hu\n", ntohs(servaddr.sin_port));
 	void *recv_buf = malloc(1 << 16);
 
 	while (1) {
 		size_t sz = recv(sock, recv_buf, 1 << 16, 0);
 		void *s = parse_buffer(recv_buf, sz);
+
+		uint8_t cmd_byte = ((uint8_t *) s)[0];
 		switch (CMD_BYTE(s)) {
 			case CMD_CLIENT_GET:
 				printf("got a GET\n");

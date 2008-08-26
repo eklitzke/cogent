@@ -47,13 +47,13 @@ construct_get(char *key, uint8_t key_len, size_t *buf_len)
 void *
 parse_buffer(void *buf, size_t len)
 {
-	if ((len < 24) || (memcmp(buf, MAGIC, 4)))
+	if ((len < 12) || (memcmp(buf, MAGIC, 4)))
 		return NULL;
 
 	/* Parse the common parts of the header */
 	proto_base base;
-	base.version = ((uint8_t *) buf)[5] & 0x0f;
-	base.cmd_byte = ((uint8_t *) buf)[6];
+	base.version = ((uint8_t *) buf)[4] & 0x0f;
+	base.cmd_byte = ((uint8_t *) buf)[5];
 
 	/* FIXME: this is just dumb */
 	memcpy(&base.padding, buf + 6, 2);
@@ -106,6 +106,6 @@ parse_client_get(void *buf, proto_base *pb)
 	proto_client_get *s = malloc(sizeof(proto_client_get));
 	memcpy(s, pb, sizeof(proto_base));
 	s->key_len = *((uint8_t *) pb);
-	memcpy(s, pb + 1, s->key_len);
+	memcpy(&s->value, pb + 1, s->key_len);
 	return s;
 }
