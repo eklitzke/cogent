@@ -28,6 +28,23 @@ typedef struct {
 static void * parse_client_get(void *buf, proto_base *pb);
 
 void *
+construct_get(char *key, uint8_t key_len, size_t *buf_len)
+{
+	uint8_t *get = malloc(1 << 16); /* FIXME */
+	memcpy(get, MAGIC, 4);
+	get[4] = 0;              /* version */
+	get[5] = CMD_CLIENT_GET; /* cmd */
+	get[6] = 0;              /* padding */
+	get[7] = 0;              /* padding */
+	memcpy(get + 8, 0, 4);   /* opaque id */
+	get[12] = key_len;
+	memcpy(get + 13, key, key_len);
+
+	*buf_len = 13 + key_len;
+	return (void *) get;
+}
+
+void *
 parse_buffer(void *buf, size_t len)
 {
 	if ((len < 24) || (memcmp(buf, MAGIC, 4)))
