@@ -45,7 +45,7 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 		return NULL;
 
 	size_t buf_len = 0;
-	void *buf = construct_get(key, (uint8_t) len, &buf_len);
+	void *buf = construct_client_get(key, (uint8_t) len, &buf_len);
 
 	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
 

@@ -22,6 +22,8 @@
 
 
 void* parse_buffer(void *buf, size_t len);
-void* construct_get(char *key, uint8_t key_len, size_t *buf_len);
+
+void* construct_client_get(char *key, uint8_t key_len, size_t *buf_len);
+void* construct_client_set(char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len);
 
 #endif
