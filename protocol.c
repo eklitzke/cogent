@@ -47,6 +47,16 @@ construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t
 }
 
 void *
+construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *buf_len)
+{
+	*buf_len = 13 + val_len;
+	uint8_t *get = construct_base(CMD_SERVER_GET, *buf_len);
+	get[12] = val_len;
+	memcpy(get + 13, val, val_len);
+	return (void *) get;
+}
+
+void *
 parse_buffer(void *buf, size_t len)
 {
 	if ((len < 12) || (memcmp(buf, MAGIC, 4)))

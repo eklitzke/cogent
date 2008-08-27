@@ -6,6 +6,8 @@
 
 /* Clients will need these to figure out what kind of struct they have */
 
+#define FLAG_MISS 1
+
 #define CMD_CLIENT_GET   ((uint8_t) 'G')
 #define CMD_CLIENT_SET   ((uint8_t) 'S')
 #define CMD_CLIENT_DEL   ((uint8_t) 'D')
@@ -52,5 +54,8 @@ void* parse_buffer(void *buf, size_t len);
 
 void* construct_client_get(const char *key, uint8_t key_len, size_t *buf_len);
 void* construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
+
+void* construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *buf_len);
+//void* construct_server_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
 
 #endif
