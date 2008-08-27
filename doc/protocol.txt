@@ -10,6 +10,14 @@ opaque id          -- four bytes
 [ cmd-specific fixed width fields ]
 [ cmd-specific variable width fields ]
 
+*NOTE*
+For the initial version of the code, the key must be null-terminated. This
+means that the string must not contain embedded null bytes, and the final byte
+must be null. For example, if the key was "foo", you would need to send a four
+byte key, "foo" with a null byte, and the key length would be four. The reason
+for this limitation is that glib has a builtin hashing function that works for
+null terminated strings. For a final release I would remove this limitaiton.
+
 This protocol is subject to change, although I would imagine that that would
 happen before anyone else is interested enough in this project to write a
 library for a new language.
