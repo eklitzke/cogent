@@ -2,6 +2,7 @@
 #define _PROTOCOL_H_
 
 #include <stdint.h>
+#include <glib.h>
 
 /* Clients will need these to figure out what kind of struct they have */
 
@@ -20,10 +21,30 @@
 /* Get the value of the command byte from the struct */
 #define CMD_BYTE(x)      (((uint8_t *) x)[0])
 
+/* Need to terminate this macro with a semicolon */
+#define PROTO_HEAD \
+	uint8_t cmd_byte; \
+	uint8_t version; \
+	uint16_t padding; \
+	uint32_t opaque_id
+
+static const uint8_t MAGIC[] = { 0x43, 0x47, 0x4e, 0x54 };
+
+typedef struct {
+	PROTO_HEAD;
+} proto_base;
+
+typedef struct {
+	PROTO_HEAD;
+	uint8_t key_len;
+	gpointer key;
+} proto_client_get;
+
+
 
 void* parse_buffer(void *buf, size_t len);
 
-void* construct_client_get(char *key, uint8_t key_len, size_t *buf_len);
-void* construct_client_set(char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len);
+void* construct_client_get(const char *key, uint8_t key_len, size_t *buf_len);
+void* construct_client_set(const char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len);
 
 #endif

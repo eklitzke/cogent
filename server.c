@@ -37,11 +37,12 @@ int main(int argc, char **argv)
 		switch (CMD_BYTE(s)) {
 			case CMD_CLIENT_GET:
 				printf("got a GET\n");
+				g_slice_free1(((proto_client_get *) s)->key_len, ((proto_client_get *) s)->key);
+				g_slice_free1(sz, s);
 				break;
 			default:
 				printf("unknown\n");
 		}
-		free(s);
 	}
 
 	exit(EXIT_SUCCESS);

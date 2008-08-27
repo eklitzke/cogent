@@ -6,31 +6,14 @@
 
 #include "protocol.h"
 
-/* Need to terminate this macro with a semicolon */
-#define PROTO_HEAD \
-	uint8_t cmd_byte; \
-	uint8_t version; \
-	uint16_t padding; \
-	uint32_t opaque_id
-
-static const uint8_t MAGIC[] = { (uint8_t) 'C', (uint8_t) 'G', (uint8_t) 'N', (uint8_t) 'T' };
-
-typedef struct {
-	PROTO_HEAD;
-} proto_base;
-
-typedef struct {
-	PROTO_HEAD;
-	uint8_t key_len;
-	const void *value;
-} proto_client_get;
+#include <glib.h>
 
 static void * parse_client_get(void *buf, proto_base *pb);
 
 static uint8_t *
 construct_base(size_t sz)
 {
-	uint8_t *get = malloc(sz);
+	uint8_t *get = g_slice_alloc(sz);
 	memcpy(get, MAGIC, 4);
 	get[4] = 0;              /* version */
 	get[5] = CMD_CLIENT_GET; /* cmd */
@@ -41,7 +24,7 @@ construct_base(size_t sz)
 }
 
 void *
-construct_client_get(char *key, uint8_t key_len, size_t *buf_len)
+construct_client_get(const char *key, uint8_t key_len, size_t *buf_len)
 {
 	*buf_len = 13 + key_len;
 	uint8_t *get = construct_base(*buf_len);
@@ -51,7 +34,7 @@ construct_client_get(char *key, uint8_t key_len, size_t *buf_len)
 }
 
 void *
-construct_client_set(char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len)
+construct_client_set(const char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len)
 {
 	*buf_len = 15 + key_len + val_len;
 	uint8_t *set = construct_base(*buf_len);
@@ -121,9 +104,9 @@ parse_buffer(void *buf, size_t len)
 static void *
 parse_client_get(void *buf, proto_base *pb)
 {
-	proto_client_get *s = malloc(sizeof(proto_client_get));
+	proto_client_get *s = g_slice_alloc(sizeof(proto_client_get));
 	memcpy(s, pb, sizeof(proto_base));
 	s->key_len = *((uint8_t *) buf);
-	memcpy(&s->value, buf + 1, s->key_len);
+	s->key = g_slice_copy(s->key_len, buf + 1);
 	return s;
 }

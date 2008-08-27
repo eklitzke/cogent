@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <glib.h>
 
 typedef struct
 {
@@ -19,10 +20,11 @@ typedef struct
 } CogentObject;
 
 static int
-cogent_init(CogentObject *self, PyObject *args)
+cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 {
-	unsigned short int port;
-	if (!PyArg_ParseTuple(args, "H", &port))
+	static char *kwlist[] = {"port", NULL};
+	unsigned short int port = 22122;
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|H", kwlist, &port))
 		return -1;
 
 	self->sock = socket(PF_INET, SOCK_DGRAM, 0);
@@ -48,7 +50,7 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	void *buf = construct_client_get(key, (uint8_t) len, &buf_len);
 
 	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
-	free(buf);
+	g_slice_free1(buf_len, buf);
 
 	Py_INCREF(Py_None);
 	return Py_None;
