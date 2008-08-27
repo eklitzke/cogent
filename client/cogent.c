@@ -40,14 +40,34 @@ static PyObject*
 cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 {
 	const char *key;
-	int len;
 
 	static char *kwlist[] = {"key", NULL};
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#", kwlist, &key, &len))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &key))
 		return NULL;
 
 	size_t buf_len = 0;
-	void *buf = construct_client_get(key, (uint8_t) len, &buf_len);
+	void *buf = construct_client_get(key, (uint8_t) (strlen(key) + 1), &buf_len);
+
+	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
+	g_slice_free1(buf_len, buf);
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject*
+cogent_set(CogentObject *self, PyObject *args, PyObject *kwds)
+{
+	const char *key;
+	const char *val;
+	int len;
+
+	static char *kwlist[] = {"key", "val", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss#", kwlist, &key, &val, &len))
+		return NULL;
+
+	size_t buf_len = 0;
+	void *buf = construct_client_set(key, (uint8_t) (strlen(key) + 1), val, len, &buf_len);
 
 	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
 	g_slice_free1(buf_len, buf);
@@ -58,6 +78,7 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 
 static PyMethodDef cogent_methods[] = {
 	{ "get", (PyCFunction) cogent_get, METH_KEYWORDS, "get(self, key)" },
+	{ "set", (PyCFunction) cogent_set, METH_KEYWORDS, "set(self, key, val)" },
 	{ NULL }
 };
 
