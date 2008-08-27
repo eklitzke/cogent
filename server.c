@@ -16,7 +16,7 @@ inline void handle_get(cogent_cache *cache, proto_client_get *req)
 {
 	cache_item *item = cache_fetch(cache, req->key);
 	if (item == NULL)
-		printf("GET -> NULL\n");
+		printf("GET (key = %s, key_len = %d) -> NULL\n", req->key, req->key_len);
 	else
 		printf("GET -> something\n");
 	g_slice_free1(req->key_len, req->key);
@@ -25,7 +25,7 @@ inline void handle_get(cogent_cache *cache, proto_client_get *req)
 
 inline void handle_set(cogent_cache *cache, proto_client_set *req)
 {
-	printf("SET\n");
+	printf("SET (key = %s, key_len = %d)\n", req->key, req->key_len);
 	cache_store(cache, req->key, req->val, req->val_len);
 	g_slice_free1(req->key_len, req->key);
 	g_slice_free1(req->val_len, req->val);

@@ -119,7 +119,7 @@ parse_client_set(void *buf, proto_base *pb)
 	memcpy(s, pb, sizeof(proto_base));
 	s->key_len = *((uint8_t *) buf);
 	s->val_len = *((uint8_t *) buf + 1);
-	s->key = g_slice_copy(s->key_len, buf + 2);
-	s->val = g_slice_copy(s->val_len, buf + 2 + s->key_len);
+	s->key = g_slice_copy(s->key_len, buf + 3);
+	s->val = g_slice_copy(s->val_len, buf + 3 + s->key_len);
 	return s;
 }
