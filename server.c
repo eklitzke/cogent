@@ -7,8 +7,22 @@
 #include <netinet/in.h>
 
 #include "protocol.h"
+#include "cache.h"
+#include "lru.h"
 
 #define COGENT_PORT 22122
+
+inline void handle_get(cogent_cache *cache, proto_client_get *req)
+{
+	cache_item *item = cache_fetch(cache, req->key);
+	if (item == NULL)
+		printf("GET -> NULL\n");
+	else
+		printf("GET -> something\n");
+	g_slice_free1(req->key_len, req->key);
+	g_slice_free(proto_client_get, req);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -29,6 +43,8 @@ int main(int argc, char **argv)
 
 	void *recv_buf = malloc(1 << 16);
 
+	cogent_cache *cache = cache_init(1e8);
+
 	while (1) {
 		size_t sz = recv(sock, recv_buf, 1 << 16, 0);
 		void *s = parse_buffer(recv_buf, sz);
@@ -36,9 +52,7 @@ int main(int argc, char **argv)
 		uint8_t cmd_byte = ((uint8_t *) s)[0];
 		switch (CMD_BYTE(s)) {
 			case CMD_CLIENT_GET:
-				printf("got a GET\n");
-				g_slice_free1(((proto_client_get *) s)->key_len, ((proto_client_get *) s)->key);
-				g_slice_free1(sz, s);
+				handle_get(cache, (proto_client_get *) s);
 				break;
 			default:
 				printf("unknown\n");

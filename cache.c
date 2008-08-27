@@ -14,6 +14,8 @@ cache_store(cogent_cache *cache, gpointer key, gpointer data, gsize size)
 	g_hash_table_replace(cache->tbl, key, head_link);
 }
 
+/* FIXME: need to say how long the key is! */
+
 /* Fetch an item from the cache */
 cache_item *
 cache_fetch(cogent_cache *cache, gconstpointer key)
