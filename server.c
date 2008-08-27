@@ -23,6 +23,15 @@ inline void handle_get(cogent_cache *cache, proto_client_get *req)
 	g_slice_free(proto_client_get, req);
 }
 
+inline void handle_set(cogent_cache *cache, proto_client_set *req)
+{
+	printf("SET\n");
+	cache_store(cache, req->key, req->val, req->val_len);
+	g_slice_free1(req->key_len, req->key);
+	g_slice_free1(req->val_len, req->val);
+	g_slice_free(proto_client_get, req);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -53,6 +62,9 @@ int main(int argc, char **argv)
 		switch (CMD_BYTE(s)) {
 			case CMD_CLIENT_GET:
 				handle_get(cache, (proto_client_get *) s);
+				break;
+			case CMD_CLIENT_SET:
+				handle_set(cache, (proto_client_set *) s);
 				break;
 			default:
 				printf("unknown\n");

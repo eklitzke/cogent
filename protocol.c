@@ -9,14 +9,15 @@
 #include <glib.h>
 
 static void * parse_client_get(void *buf, proto_base *pb);
+static void * parse_client_set(void *buf, proto_base *pb);
 
 static uint8_t *
-construct_base(size_t sz)
+construct_base(uint8_t cmd, size_t sz)
 {
 	uint8_t *get = g_slice_alloc(sz);
 	memcpy(get, MAGIC, 4);
 	get[4] = 0;              /* version */
-	get[5] = CMD_CLIENT_GET; /* cmd */
+	get[5] = cmd;            /* cmd */
 	get[6] = 0;              /* padding */
 	get[7] = 0;              /* padding */
 	memset(get + 8, 0, 4);   /* opaque id */
@@ -27,17 +28,17 @@ void *
 construct_client_get(const char *key, uint8_t key_len, size_t *buf_len)
 {
 	*buf_len = 13 + key_len;
-	uint8_t *get = construct_base(*buf_len);
+	uint8_t *get = construct_base(CMD_CLIENT_GET, *buf_len);
 	get[12] = key_len;
 	memcpy(get + 13, key, key_len);
 	return (void *) get;
 }
 
 void *
-construct_client_set(const char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len)
+construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len)
 {
 	*buf_len = 15 + key_len + val_len;
-	uint8_t *set = construct_base(*buf_len);
+	uint8_t *set = construct_base(CMD_CLIENT_SET, *buf_len);
 	set[12] = key_len;
 	memcpy(set + 13, &val_len, 2);
 	memcpy(set + 15, key, key_len);
@@ -67,10 +68,10 @@ parse_buffer(void *buf, size_t len)
 		case CMD_CLIENT_GET:
 			return parse_client_get(rest, &base);
 			break;
-#if 0
 		case CMD_CLIENT_SET:
-			return parse_client_set(rest);
+			return parse_client_set(rest, &base);
 			break;
+#if 0
 		case CMD_CLIENT_DEL:
 			return parse_client_del(rest);
 			break;
@@ -108,5 +109,17 @@ parse_client_get(void *buf, proto_base *pb)
 	memcpy(s, pb, sizeof(proto_base));
 	s->key_len = *((uint8_t *) buf);
 	s->key = g_slice_copy(s->key_len, buf + 1);
+	return s;
+}
+
+static void *
+parse_client_set(void *buf, proto_base *pb)
+{
+	proto_client_set *s = g_slice_alloc(sizeof(proto_client_set));
+	memcpy(s, pb, sizeof(proto_base));
+	s->key_len = *((uint8_t *) buf);
+	s->val_len = *((uint8_t *) buf + 1);
+	s->key = g_slice_copy(s->key_len, buf + 2);
+	s->val = g_slice_copy(s->val_len, buf + 2 + s->key_len);
 	return s;
 }

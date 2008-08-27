@@ -40,11 +40,17 @@ typedef struct {
 	gpointer key;
 } proto_client_get;
 
-
+typedef struct {
+	PROTO_HEAD;
+	uint8_t key_len;
+	uint8_t val_len;
+	gpointer key;
+	gpointer val;
+} proto_client_set;
 
 void* parse_buffer(void *buf, size_t len);
 
 void* construct_client_get(const char *key, uint8_t key_len, size_t *buf_len);
-void* construct_client_set(const char *key, uint8_t key_len, void *val, uint16_t val_len, size_t *buf_len);
+void* construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
 
 #endif
