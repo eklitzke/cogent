@@ -133,3 +133,13 @@ parse_client_set(void *buf, proto_base *pb)
 	s->val = g_slice_copy(s->val_len, buf + 3 + s->key_len);
 	return s;
 }
+
+static void *
+parse_server_get(void *buf, proto_base *pb)
+{
+	proto_server_get *s = g_slice_alloc(sizeof(proto_server_get));
+	memcpy(s, pb, sizeof(proto_base));
+	s->val_len = *((uint8_t *) buf);
+	s->val = g_slice_copy(s->val_len, buf + 1);
+	return s;
+}

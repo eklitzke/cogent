@@ -3,7 +3,7 @@
 #include "cache.h"
 
 void
-cache_store(cogent_cache *cache, gpointer key, gpointer data, gsize size)
+cache_store(cogent_cache *cache, gconstpointer key, gconstpointer data, gsize size)
 {
 	lru_add_data(cache->cache, data, size);
 

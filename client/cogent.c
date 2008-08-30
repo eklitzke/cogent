@@ -11,12 +11,17 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <glib.h>
+#include <assert.h>
+
+#define RECVBUFSZ (1 << 16)
 
 typedef struct
 {
 	PyObject_HEAD
 	int sock;
 	struct sockaddr_in servaddr;
+	struct sockaddr_in cliaddr;
+	void *recv_buf;
 } CogentObject;
 
 static int
@@ -28,10 +33,29 @@ cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 		return -1;
 
 	self->sock = socket(PF_INET, SOCK_DGRAM, 0);
-	memset(&self->servaddr, 0, sizeof(self->servaddr));
-	self->servaddr.sin_family = AF_INET;
-	self->servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	self->servaddr.sin_port = htons(port);
+
+	struct sockaddr_in servaddr;
+	memset(&servaddr, 0, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servaddr.sin_port = htons(port);
+
+	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+
+	/* Set the default destination */
+	if (connect(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0)
+		return -1;
+	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+
+	/* Figure out how to get data back from the server... */
+	if (bind(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0)
+		return -1;
+
+	socklen_t nl = sizeof(self->cliaddr);
+	getsockname(self->sock, (struct sockaddr *) &self->cliaddr, &nl);
+	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+
+	self->recv_buf = g_slice_alloc(RECVBUFSZ);
 
 	return 0;
 }
@@ -50,6 +74,8 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 
 	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
 	g_slice_free1(buf_len, buf);
+	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	printf("amt = %d\n", (int) amt);
 
 	Py_INCREF(Py_None);
 	return Py_None;

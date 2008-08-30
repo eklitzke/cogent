@@ -44,6 +44,12 @@ typedef struct {
 
 typedef struct {
 	PROTO_HEAD;
+	uint8_t val_len;
+	gpointer val;
+} proto_server_get;
+
+typedef struct {
+	PROTO_HEAD;
 	uint8_t key_len;
 	uint8_t val_len;
 	gpointer key;

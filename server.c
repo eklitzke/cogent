@@ -31,7 +31,9 @@ inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 	else
 		resp_buf = construct_server_get(0, (uint16_t) item->size, item->data, &resp_len);
 
+	puts("sending");
 	sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(from));
+	puts("done sending");
 
 	g_slice_free1(req->key_len, req->key);
 	g_slice_free(proto_client_get, req);
@@ -43,7 +45,6 @@ inline void handle_set(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 	g_slice_free1(req->val_len, req->val);
 	g_slice_free(proto_client_set, req);
 }
-
 
 int main(int argc, char **argv)
 {
