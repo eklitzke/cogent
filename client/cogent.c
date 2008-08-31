@@ -71,8 +71,13 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	size_t buf_len = 0;
 	void *buf = construct_client_get(key, (uint8_t) (strlen(key) + 1), &buf_len);
 
-	send(self->sock, buf, buf_len, 0);
-	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	if (send(self->sock, buf, buf_len, 0) < 0)
+		perror("send()");
+
+	/* FIXME */
+	int recv_sock = socket(PF_INET, SOCK_DGRAM, 0);
+	printf("calling recv on %d\n", recv_sock);
+	size_t amt = recv(recv_sock, self->recv_buf, RECVBUFSZ, 0);
 	printf("amt = %d\n", (int) amt);
 	g_slice_free1(buf_len, buf);
 
