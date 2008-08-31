@@ -48,8 +48,10 @@ cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
 
 	/* Figure out how to get data back from the server... */
-	if (bind(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0)
+	if (bind(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0) {
+		perror("bind");
 		return -1;
+	}
 
 	socklen_t nl = sizeof(self->cliaddr);
 	getsockname(self->sock, (struct sockaddr *) &self->cliaddr, &nl);
