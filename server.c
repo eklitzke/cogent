@@ -4,11 +4,15 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <netinet/in.h>
 
 #include "protocol.h"
 #include "cache.h"
 #include "lru.h"
+
+#define MIN_MEM 1
+#define MAX_MEM 1024
 
 #define COGENT_PORT 22122
 
@@ -48,6 +52,40 @@ inline void handle_set(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 
 int main(int argc, char **argv)
 {
+	int c;
+	int memory = 64; /* in megabytes */
+	gboolean daemonize = FALSE;
+	opterr = 0;
+
+	while ((c = getopt(argc, argv, "dhm:")) != -1)
+		switch (c)
+		{
+			case 'd':
+				daemonize = TRUE;
+				break;
+			case 'h':
+				/* FIXME */
+				break;
+			case 'm':
+				memory = *optarg;
+				break;
+			case '?':
+				if (optopt == 'm')
+					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+				else if (isprint(optopt))
+					fprintf(stderr, "Unknown uption `-%c',\n", optopt);
+				else
+					fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+				exit(EXIT_FAILURE);
+			default:
+				abort();
+		}
+
+	if ((memory < MIN_MEM) || (memory > MAX_MEM)) {
+		fprintf(stderr, "Must have %d <= memory <= %d\n", MIN_MEM, MAX_MEM);
+		exit(EXIT_FAILURE);
+	}
+
 	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
 		perror("socket()");
@@ -68,7 +106,8 @@ int main(int argc, char **argv)
 
 	void *recv_buf = g_slice_alloc(RECVBUFSZ);
 
-	cogent_cache *cache = cache_init(1e8);
+	/* Memory is specified in megabytes, but cache_init wants bytes */
+	cogent_cache *cache = cache_init(memory << 20);
 
 	while (1) {
 		ssize_t sz = recvfrom(sock, recv_buf, RECVBUFSZ, 0, (struct sockaddr *) &from, &from_sz);
