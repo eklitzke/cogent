@@ -13,14 +13,14 @@
 #include <glib.h>
 #include <assert.h>
 
+#define DEFAULT_PORT 22122
+
 #define RECVBUFSZ (1 << 16)
 
 typedef struct
 {
 	PyObject_HEAD
 	int sock;
-	struct sockaddr_in servaddr;
-	struct sockaddr_in cliaddr;
 	void *recv_buf;
 } CogentObject;
 
@@ -28,7 +28,7 @@ static int
 cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 {
 	static char *kwlist[] = {"port", NULL};
-	unsigned short int port = 22122;
+	unsigned short int port = DEFAULT_PORT;
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|H", kwlist, &port))
 		return -1;
 
@@ -37,23 +37,22 @@ cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 	struct sockaddr_in servaddr;
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servaddr.sin_addr.s_addr = INADDR_ANY;
 	servaddr.sin_port = htons(port);
 
-	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+	printf("servaddr.sin_port = %hu\n", ntohs(servaddr.sin_port));
 
 	/* Set the default destination */
-	if (connect(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0)
+	if (connect(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0) {
+		perror("connect");
 		return -1;
-	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+	}
+	printf("servaddr.sin_port = %hu\n", ntohs(servaddr.sin_port));
 
-	/* Figure out how to get data back from the server... */
-	if (bind(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0)
-		return -1;
-
-	socklen_t nl = sizeof(self->cliaddr);
-	getsockname(self->sock, (struct sockaddr *) &self->cliaddr, &nl);
-	printf("servaddr.sin_port = %hu\n", ntohs(self->servaddr.sin_port));
+	struct sockaddr_in cliaddr;
+	socklen_t nl = sizeof(cliaddr);
+	getsockname(self->sock, (struct sockaddr *) &cliaddr, &nl);
+	printf("cliaddr.sin_port = %hu\n", ntohs(cliaddr.sin_port));
 
 	self->recv_buf = g_slice_alloc(RECVBUFSZ);
 
@@ -72,10 +71,15 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	size_t buf_len = 0;
 	void *buf = construct_client_get(key, (uint8_t) (strlen(key) + 1), &buf_len);
 
-	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
-	g_slice_free1(buf_len, buf);
-	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	if (send(self->sock, buf, buf_len, 0) < 0)
+		perror("send()");
+
+	/* FIXME */
+	int recv_sock = socket(PF_INET, SOCK_DGRAM, 0);
+	printf("calling recv on %d\n", recv_sock);
+	size_t amt = recv(recv_sock, self->recv_buf, RECVBUFSZ, 0);
 	printf("amt = %d\n", (int) amt);
+	g_slice_free1(buf_len, buf);
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -95,7 +99,7 @@ cogent_set(CogentObject *self, PyObject *args, PyObject *kwds)
 	size_t buf_len = 0;
 	void *buf = construct_client_set(key, (uint8_t) (strlen(key) + 1), val, len, &buf_len);
 
-	sendto(self->sock, buf, buf_len, 0, (struct sockaddr *) &self->servaddr, sizeof(self->servaddr));
+	send(self->sock, buf, buf_len, 0);
 	g_slice_free1(buf_len, buf);
 
 	Py_INCREF(Py_None);
