@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 				/* FIXME */
 				break;
 			case 'm':
-				memory = *optarg;
+				memory = atoi(optarg);
 				break;
 			case '?':
 				if (optopt == 'm')
@@ -85,6 +85,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Must have %d <= memory <= %d\n", MIN_MEM, MAX_MEM);
 		exit(EXIT_FAILURE);
 	}
+
+	if (daemonize)
+		fprintf(stderr, "daemon mode not yet implemented, continuing in foreground...\n");
 
 	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
