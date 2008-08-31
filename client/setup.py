@@ -6,25 +6,27 @@ import os
 
 __version__ = '0.1'
 
+def process_cc_opts(output):
+	opts = output.split(' ')
+	return filter(None, (x[2:] for x in opts))
+
 macros = [('MODULE_VERSION', '"%s"' % __version__)]
 
 status, output = commands.getstatusoutput('pkg-config --cflags-only-I glib-2.0')
 if status != 0:
 	raise ValueException, 'glib-2.0 not found'
-include_dirs = ['..'] + [x[2:] for x in output.split(' ')]
+include_dirs = ['..'] + process_cc_opts(output)
 
-status, output = commands.getstatusoutput('pkg-config --libs-only-l glib-2.0')
-libraries = [y for y in [x[2:] for x in output.split(' ')] if y]
-
-print 'libraries', libraries
+#status, output = commands.getstatusoutput('pkg-config --libs-only-l glib-2.0')
+#libraries = process_cc_opts(output)
 
 status, output = commands.getstatusoutput('pkg-config --libs-only-L glib-2.0')
-library_dirs = [x[2:] for x in output.split(' ')]
+library_dirs = process_cc_opts(output)
 
 cogent_extension = Extension(
 	name='cogent',
 	sources=['cogent.c'],
-	libraries=libraries,
+	libraries=['glib-2.0'],
 	include_dirs=include_dirs,
 	library_dirs=library_dirs,
 	define_macros=macros,
