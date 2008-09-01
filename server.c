@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	if (daemonize)
 		fprintf(stderr, "daemon mode not yet implemented, continuing in foreground...\n");
 
-	int sock = socket(PF_INET, SOCK_DGRAM, 0);
+	int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (sock == -1) {
 		perror("socket()");
 		exit(EXIT_FAILURE);

@@ -32,7 +32,7 @@ cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|H", kwlist, &port))
 		return -1;
 
-	self->sock = socket(PF_INET, SOCK_DGRAM, 0);
+	self->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
 	struct sockaddr_in servaddr;
 	memset(&servaddr, 0, sizeof(servaddr));
@@ -74,11 +74,8 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	if (send(self->sock, buf, buf_len, 0) < 0)
 		perror("send()");
 
-	/* FIXME */
-	int recv_sock = socket(PF_INET, SOCK_DGRAM, 0);
-	printf("calling recv on %d\n", recv_sock);
-	size_t amt = recv(recv_sock, self->recv_buf, RECVBUFSZ, 0);
-	printf("amt = %d\n", (int) amt);
+	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	printf("got %d bytes\n", (int) amt);
 	g_slice_free1(buf_len, buf);
 
 	Py_INCREF(Py_None);
