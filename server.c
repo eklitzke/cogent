@@ -36,11 +36,11 @@ inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 		resp_buf = construct_server_get(0, (uint16_t) item->size, item->data, &resp_len);
 
 	/* FIXME */
-	//int s_sock = socket(PF_INET, SOCK_DGRAM, 0);
-	printf("sending to port %hu...\n", ntohs(from->sin_port));
-	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(from)) < 0)
+	printf("sending to port %hu...", ntohs(from->sin_port));
+	fflush(stdout);
+	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(struct sockaddr)) < 0)
 		perror("sendto()");
-	puts("done sending");
+	puts(" done sending");
 
 	g_slice_free1(req->key_len, req->key);
 	g_slice_free(proto_client_get, req);
@@ -117,7 +117,10 @@ int main(int argc, char **argv)
 
 	while (1) {
 		ssize_t sz = recvfrom(sock, recv_buf, RECVBUFSZ, 0, (struct sockaddr *) &from, &from_sz);
-		//printf("from port %hu\n", ntohs(from.sin_port));
+		if (sz == -1 ) {
+			perror("recvfrom()");
+			exit(EXIT_FAILURE);
+		}
 		void *s = parse_buffer(recv_buf, sz);
 
 		uint8_t cmd_byte = ((uint8_t *) s)[0];
