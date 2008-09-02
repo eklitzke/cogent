@@ -25,19 +25,40 @@ typedef struct
 } CogentObject;
 
 static int
-cogent_init(CogentObject *self, PyObject *args, PyObject *kwds)
+cogent_init(CogentObject *self, PyObject *args)
 {
-	static char *kwlist[] = {"port", NULL};
-	unsigned short int port = DEFAULT_PORT;
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|H", kwlist, &port))
+	const char *host_str = "";
+	if (!PyArg_ParseTuple(args, "|s", &host_str))
 		return -1;
+
+	char *host = NULL;
+	uint16_t port = 22122;
+
+	/* FIXME: this is fragile, probably wrong, might leaks memory */
+	if (strlen(host_str) > 0) {
+		const char *colon = strchr(host_str, ':');
+		if (colon == NULL) {
+			/* do we have an ip or a port? */
+			const char *dot = strchr(host_str, '.');
+			if (dot == NULL)
+				port = (uint16_t) atoi(host);
+			else
+				host = host_str;
+		} else {
+			host = strndup(host_str, colon - host_str);
+			port = 22122; /* FIXME */
+		}
+	} else {
+		host = "127.0.0.1";
+	}
+	printf("host is %s, port is %d\n", host, port);
 
 	self->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
 	struct sockaddr_in servaddr;
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = INADDR_ANY;
+	servaddr.sin_addr.s_addr = inet_addr(host);
 	servaddr.sin_port = htons(port);
 
 	printf("servaddr.sin_port = %hu\n", ntohs(servaddr.sin_port));
