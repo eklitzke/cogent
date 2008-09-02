@@ -34,6 +34,7 @@ cogent_init(CogentObject *self, PyObject *args)
 	char *host = NULL;
 	uint16_t port = 22122;
 
+#if 0
 	/* FIXME: this is fragile, probably wrong, might leaks memory */
 	if (strlen(host_str) > 0) {
 		const char *colon = strchr(host_str, ':');
@@ -52,31 +53,23 @@ cogent_init(CogentObject *self, PyObject *args)
 		host = "127.0.0.1";
 	}
 	printf("host is %s, port is %d\n", host, port);
+#endif
 
 	self->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
 	struct sockaddr_in servaddr;
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr(host);
+	servaddr.sin_addr.s_addr = INADDR_ANY;
 	servaddr.sin_port = htons(port);
-
-	printf("servaddr.sin_port = %hu\n", ntohs(servaddr.sin_port));
 
 	/* Set the default destination */
 	if (connect(self->sock, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0) {
 		perror("connect");
 		return -1;
 	}
-	printf("servaddr.sin_port = %hu\n", ntohs(servaddr.sin_port));
-
-	struct sockaddr_in cliaddr;
-	socklen_t nl = sizeof(cliaddr);
-	getsockname(self->sock, (struct sockaddr *) &cliaddr, &nl);
-	printf("cliaddr.sin_port = %hu\n", ntohs(cliaddr.sin_port));
 
 	self->recv_buf = g_slice_alloc(RECVBUFSZ);
-
 	return 0;
 }
 
@@ -96,11 +89,20 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 		perror("send()");
 
 	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
-	printf("got %d bytes\n", (int) amt);
-	g_slice_free1(buf_len, buf);
+	if (amt < 0)
+		perror("recv()");
 
-	Py_INCREF(Py_None);
-	return Py_None;
+	/* FIXME */
+	void *v = parse_buffer(self->recv_buf, amt);
+	assert(v != NULL);
+	assert(CMD_BYTE(v) == CMD_SERVER_GET);
+	proto_server_get *s = (proto_server_get *) v;
+
+	/* FIXME: leaks memory */
+	PyObject *obj = PyString_FromStringAndSize(s->val, s->val_len);
+	//printf("got %d bytes\n", (int) amt);
+	//g_slice_free1(buf_len, buf);
+	return obj;
 }
 
 static PyObject*

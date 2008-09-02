@@ -11,6 +11,8 @@
 static void * parse_client_get(void *buf, proto_base *pb);
 static void * parse_client_set(void *buf, proto_base *pb);
 
+static void * parse_server_get(void *buf, proto_base *pb);
+
 static uint8_t *
 construct_base(uint8_t cmd, size_t sz)
 {
@@ -91,9 +93,11 @@ parse_buffer(void *buf, size_t len)
 		case CMD_CLIENT_PING:
 			return parse_client_ping(rest);
 			break;
+#endif
 		case CMD_SERVER_GET:
-			return parse_server_get(rest);
+			return parse_server_get(rest, &base);
 			break;
+#if 0
 		case CMD_SERVER_SET:
 			return parse_server_set(rest);
 			break;

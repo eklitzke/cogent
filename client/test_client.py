@@ -1,4 +1,5 @@
 import cogent
 c = cogent.Client()
 c.set('foo', 'bar')
-c.get('foo')
+r = c.get('foo')
+print 'result of get is %s' % r

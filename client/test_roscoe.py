@@ -1,4 +1,4 @@
 import cogent
 c = cogent.Client('192.168.1.101')
 c.set('foo', 'bar')
-c.get('foo')
+print c.get('foo')

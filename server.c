@@ -36,7 +36,7 @@ inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 		resp_buf = construct_server_get(0, (uint16_t) item->size, item->data, &resp_len);
 
 	/* FIXME */
-	printf("sending to port %hu...", ntohs(from->sin_port));
+	printf("sending to port %hu using UDP transport...", ntohs(from->sin_port));
 	fflush(stdout);
 	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(struct sockaddr)) < 0)
 		perror("sendto()");
