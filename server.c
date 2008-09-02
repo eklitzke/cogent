@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <stdio.h>
 
 #include "protocol.h"
 #include "cache.h"
@@ -21,7 +22,16 @@
 void *global_set;
 void *global_get;
 
-/* Ports are in NETWORK ORDER */
+/* only log if DEBUG is defined */
+void log_msg(const char *format_str, ...)
+{
+#ifdef DEBUG
+	va_list ap;
+	va_start(ap, format_str);
+	vprintf(format_str, ap);
+	va_end(ap);
+#endif
+}
 
 inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, proto_client_get *req)
 {
@@ -36,11 +46,9 @@ inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 		resp_buf = construct_server_get(0, (uint16_t) item->size, item->data, &resp_len);
 
 	/* FIXME */
-	printf("sending to port %hu using UDP transport...", ntohs(from->sin_port));
-	fflush(stdout);
 	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(struct sockaddr)) < 0)
 		perror("sendto()");
-	puts(" done sending");
+	log_msg("sent to port %hu using UDP transport\n", ntohs(from->sin_port));
 
 	g_slice_free1(req->key_len, req->key);
 	g_slice_free(proto_client_get, req);
@@ -132,7 +140,7 @@ int main(int argc, char **argv)
 				handle_set(cache, sock, &from, (proto_client_set *) s);
 				break;
 			default:
-				printf("unknown\n");
+				fprintf(stderr, "unknown\n");
 		}
 	}
 

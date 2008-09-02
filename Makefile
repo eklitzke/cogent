@@ -7,7 +7,7 @@ FLAGS = -fPIC -g -Os
 all: cogent
 
 cogent: cache.o protocol.o lru.o server.c
-	$(CC) -g -Os lru.o cache.o protocol.o $$(pkg-config --cflags --libs glib-2.0) server.c -o cogent
+	$(CC) -g -Os -DDEBUG lru.o cache.o protocol.o $$(pkg-config --cflags --libs glib-2.0) server.c -o cogent
 
 lru.o: lru.h lru.c
 	$(CC) -c $(FLAGS) $$(pkg-config --cflags glib-2.0) lru.c
