@@ -1,0 +1,12 @@
+This code is super alpha, not feature complete, etc. but here are the goals,
+roughly.
+
+Short Term
+--------------
+* Implement del
+* Properly validate get, set
+
+Medium Term
+--------------
+* Fuzz testing
+* Fix all memory leaks!
