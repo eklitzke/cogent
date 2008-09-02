@@ -10,8 +10,10 @@
 
 static void * parse_client_get(void *buf, proto_base *pb);
 static void * parse_client_set(void *buf, proto_base *pb);
+static void * parse_client_del(void *buf, proto_base *pb);
 
 static void * parse_server_get(void *buf, proto_base *pb);
+static void * parse_server_del(void *buf, proto_base *pb);
 
 static uint8_t *
 construct_base(uint8_t cmd, size_t sz)
@@ -49,6 +51,16 @@ construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t
 }
 
 void *
+construct_client_del(const char *key, uint8_t key_len, size_t *buf_len)
+{
+	*buf_len = 13 + key_len;
+	uint8_t *del = construct_base(CMD_CLIENT_DEL, *buf_len);
+	del[12] = key_len;
+	memcpy(del + 13, key, key_len);
+	return (void *) del;
+}
+
+void *
 construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *buf_len)
 {
 	*buf_len = 13 + val_len;
@@ -59,10 +71,19 @@ construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *b
 }
 
 void *
-construct_server_set(uint8_t flags)
+construct_server_set(uint8_t flags, size_t *buf_len)
 {
-	return (void *) construct_base(CMD_SERVER_SET, 12);
+	*buf_len = 12;
+	return (void *) construct_base(CMD_SERVER_SET, *buf_len);
 }
+
+void *
+construct_server_del(uint8_t flags, size_t *buf_len)
+{
+	*buf_len = 12;
+	return (void *) construct_base(CMD_SERVER_DEL, *buf_len);
+}
+
 
 void *
 parse_buffer(void *buf, size_t len)
@@ -89,10 +110,10 @@ parse_buffer(void *buf, size_t len)
 		case CMD_CLIENT_SET:
 			return parse_client_set(rest, &base);
 			break;
-#if 0
 		case CMD_CLIENT_DEL:
-			return parse_client_del(rest);
+			return parse_client_del(rest, &base);
 			break;
+#if 0
 		case CMD_CLIENT_QUERY:
 			return parse_client_query(rest);
 			break;
@@ -151,5 +172,15 @@ parse_server_get(void *buf, proto_base *pb)
 	memcpy(s, pb, sizeof(proto_base));
 	s->val_len = *((uint8_t *) buf);
 	s->val = g_slice_copy(s->val_len, buf + 1);
+	return s;
+}
+
+static void *
+parse_client_del(void *buf, proto_base *pb)
+{
+	proto_server_del *s = g_slice_alloc(sizeof(proto_server_del));
+	memcpy(s, pb, sizeof(proto_base));
+	s->key_len = *((uint8_t *) buf);
+	s->key = g_slice_copy(s->key_len, buf + 1);
 	return s;
 }

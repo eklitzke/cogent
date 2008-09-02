@@ -55,6 +55,12 @@ typedef struct {
 
 typedef struct {
 	PROTO_HEAD;
+	uint8_t key_len;
+	gpointer key;
+} proto_server_del;
+
+typedef struct {
+	PROTO_HEAD;
 	uint8_t val_len;
 	gpointer val;
 } proto_server_get;
@@ -64,12 +70,15 @@ typedef struct {
 	PROTO_HEAD;
 } proto_server_set;
 
+
 void* parse_buffer(void *buf, size_t len);
 
 void* construct_client_get(const char *key, uint8_t key_len, size_t *buf_len);
 void* construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
+void* construct_client_del(const char *key, uint8_t key_len, size_t *buf_len);
 
 void* construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *buf_len);
-void* construct_server_set(uint8_t flags);
+void* construct_server_set(uint8_t flags, size_t *buf_len);
+void* construct_server_del(uint8_t flags, size_t *buf_len);
 
 #endif

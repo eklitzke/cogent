@@ -138,6 +138,38 @@ cogent_set(CogentObject *self, PyObject *args, PyObject *kwds)
 	return Py_None;
 }
 
+static PyObject*
+cogent_del(CogentObject *self, PyObject *args, PyObject *kwds)
+{
+	const char *key;
+	int len;
+
+	static char *kwlist[] = {"key", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#", kwlist, &key, &len))
+		return NULL;
+
+	size_t buf_len = 0;
+	void *buf = construct_client_del(key, (uint8_t) (strlen(key) + 1), &buf_len);
+
+	if (send(self->sock, buf, buf_len, 0) < 0)
+		perror("cogent_del: send()");
+
+	g_slice_free1(buf_len, buf);
+
+	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	if (amt < 0)
+		perror("cogent_del: recv()");
+
+	/* TODO: not totally efficient... */
+	void *v = parse_buffer(self->recv_buf, amt);
+	assert(v != NULL);
+	assert(CMD_BYTE(v) == CMD_SERVER_DEL);
+	g_slice_free1(amt, v);
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
 static PyMethodDef cogent_methods[] = {
 	{ "get", (PyCFunction) cogent_get, METH_KEYWORDS, "get(self, key)" },
 	{ "set", (PyCFunction) cogent_set, METH_KEYWORDS, "set(self, key, val)" },

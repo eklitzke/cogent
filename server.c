@@ -63,9 +63,22 @@ inline void handle_set(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 	cache_store(cache, req->key, req->val, req->val_len);
 
 	/* TODO: implement flags */
-	void *resp_buf = construct_server_set(0);
+	size_t resp_len;
+	void *resp_buf = construct_server_set(0, &resp_len);
 
-	size_t resp_len = 12; /* the response size is constant */
+	send_response(sock, from, resp_buf, resp_len);
+
+	g_slice_free1(req->val_len, req->val);
+	g_slice_free(proto_client_set, req);
+}
+
+inline void handle_del(cogent_cache *cache, int sock, struct sockaddr_in *from, proto_client_set *req)
+{
+	cache_store(cache, req->key, req->val, req->val_len);
+
+	/* TODO: implement flags */
+	size_t resp_len = 12;
+	void *resp_buf = construct_server_del(0, &resp_len);
 
 	send_response(sock, from, resp_buf, resp_len);
 
@@ -142,6 +155,10 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		void *s = parse_buffer(recv_buf, sz);
+		if (s == NULL) {
+			fprintf(stderr, "failed to parse input, ignoring message\n");
+			continue;
+		}
 
 		uint8_t cmd_byte = ((uint8_t *) s)[0];
 		switch (CMD_BYTE(s)) {

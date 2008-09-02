@@ -29,6 +29,12 @@ cache_fetch(cogent_cache *cache, gconstpointer key)
 	return NULL;
 }
 
+void
+cache_delete(cogent_cache *cache, gconstpointer key)
+{
+	printf("fixme!\n");
+}
+
 cogent_cache *
 cache_init(gsize size)
 {

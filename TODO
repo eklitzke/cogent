@@ -1,10 +1,10 @@
 This code is super alpha, not feature complete, etc. but here are the goals,
-roughly.
+roughly in order of when I expect to complete them.
 
 Short Term
 --------------
 * Implement del
-* Properly validate get, set
+* Add opaque ids, do real validation
 
 Medium Term
 --------------

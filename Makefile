@@ -18,6 +18,9 @@ cache.o: cache.h cache.c lru.o
 protocol.o: protocol.h protocol.c
 	$(CC) -c $(FLAGS) $$(pkg-config --cflags glib-2.0) protocol.c
 
+util.o: util.h util.c
+	$(CC) -c $(FLAGS) -D_GNU_SOURCE util.c
+
 tags:
 	find . -name '*.[ch]' | ctags -L -
 
