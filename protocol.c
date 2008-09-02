@@ -59,6 +59,12 @@ construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *b
 }
 
 void *
+construct_server_set(uint8_t flags)
+{
+	return (void *) construct_base(CMD_SERVER_SET, 12);
+}
+
+void *
 parse_buffer(void *buf, size_t len)
 {
 	if ((len < 12) || (memcmp(buf, MAGIC, 4)))

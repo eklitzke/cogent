@@ -23,6 +23,9 @@
 /* Get the value of the command byte from the struct */
 #define CMD_BYTE(x)      (((uint8_t *) x)[0])
 
+/* Like CMD_BYTE, but to be used on a raw buffer */
+#define BUF_CHAR(x)      ((char) ((char *)x)[5])
+
 /* Need to terminate this macro with a semicolon */
 #define PROTO_HEAD \
 	uint8_t cmd_byte; \
@@ -44,17 +47,22 @@ typedef struct {
 
 typedef struct {
 	PROTO_HEAD;
-	uint8_t val_len;
-	gpointer val;
-} proto_server_get;
-
-typedef struct {
-	PROTO_HEAD;
 	uint8_t key_len;
 	uint8_t val_len;
 	gpointer key;
 	gpointer val;
 } proto_client_set;
+
+typedef struct {
+	PROTO_HEAD;
+	uint8_t val_len;
+	gpointer val;
+} proto_server_get;
+
+/* TODO: should probably signal if the item had to be replaced, etc. */
+typedef struct {
+	PROTO_HEAD;
+} proto_server_set;
 
 void* parse_buffer(void *buf, size_t len);
 
@@ -62,6 +70,6 @@ void* construct_client_get(const char *key, uint8_t key_len, size_t *buf_len);
 void* construct_client_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
 
 void* construct_server_get(uint8_t flags, uint16_t val_len, const char *val, size_t *buf_len);
-//void* construct_server_set(const char *key, uint8_t key_len, const void *val, uint16_t val_len, size_t *buf_len);
+void* construct_server_set(uint8_t flags);
 
 #endif

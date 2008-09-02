@@ -33,22 +33,26 @@ void log_msg(const char *format_str, ...)
 #endif
 }
 
+void send_response(int sock, struct sockaddr_in *from, void *resp_buf, size_t resp_len)
+{
+	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(struct sockaddr)) < 0)
+		perror("sendto()");
+	log_msg("[%c] sent msg to port %hu using UDP transport\n", BUF_CHAR(resp_buf), ntohs(from->sin_port));
+}
+
 inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, proto_client_get *req)
 {
 	cache_item *item = cache_fetch(cache, req->key);
 
-	size_t resp_len;
 	void *resp_buf;
+	size_t resp_len;
 
 	if (item == NULL)
 		resp_buf = construct_server_get(FLAG_MISS, 0, "", &resp_len);
 	else
 		resp_buf = construct_server_get(0, (uint16_t) item->size, item->data, &resp_len);
 
-	/* FIXME */
-	if (sendto(sock, resp_buf, resp_len, 0, (struct sockaddr *) from, sizeof(struct sockaddr)) < 0)
-		perror("sendto()");
-	log_msg("sent to port %hu using UDP transport\n", ntohs(from->sin_port));
+	send_response(sock, from, resp_buf, resp_len);
 
 	g_slice_free1(req->key_len, req->key);
 	g_slice_free(proto_client_get, req);
@@ -57,6 +61,14 @@ inline void handle_get(cogent_cache *cache, int sock, struct sockaddr_in *from, 
 inline void handle_set(cogent_cache *cache, int sock, struct sockaddr_in *from, proto_client_set *req)
 {
 	cache_store(cache, req->key, req->val, req->val_len);
+
+	/* TODO: implement flags */
+	void *resp_buf = construct_server_set(0);
+
+	size_t resp_len = 12; /* the response size is constant */
+
+	send_response(sock, from, resp_buf, resp_len);
+
 	g_slice_free1(req->val_len, req->val);
 	g_slice_free(proto_client_set, req);
 }

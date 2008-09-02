@@ -86,11 +86,11 @@ cogent_get(CogentObject *self, PyObject *args, PyObject *kwds)
 	void *buf = construct_client_get(key, (uint8_t) (strlen(key) + 1), &buf_len);
 
 	if (send(self->sock, buf, buf_len, 0) < 0)
-		perror("send()");
+		perror("cogent_get: send()");
 
 	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
 	if (amt < 0)
-		perror("recv()");
+		perror("cogent_get: recv()");
 
 	/* FIXME */
 	void *v = parse_buffer(self->recv_buf, amt);
@@ -119,8 +119,20 @@ cogent_set(CogentObject *self, PyObject *args, PyObject *kwds)
 	size_t buf_len = 0;
 	void *buf = construct_client_set(key, (uint8_t) (strlen(key) + 1), val, len, &buf_len);
 
-	send(self->sock, buf, buf_len, 0);
+	if (send(self->sock, buf, buf_len, 0) < 0)
+		perror("cogent_set: send()");
+
 	g_slice_free1(buf_len, buf);
+
+	size_t amt = recv(self->sock, self->recv_buf, RECVBUFSZ, 0);
+	if (amt < 0)
+		perror("cogent_set: recv()");
+
+	/* TODO: not totally efficient... */
+	void *v = parse_buffer(self->recv_buf, amt);
+	assert(v != NULL);
+	assert(CMD_BYTE(v) == CMD_SERVER_SET);
+	g_slice_free1(amt, v);
 
 	Py_INCREF(Py_None);
 	return Py_None;
